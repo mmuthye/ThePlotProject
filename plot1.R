@@ -1,14 +1,12 @@
 #Plot1
 
 # Import the required libraries, if any
-library(data.table)
-library(ggplot2)
 library(dplyr)
 
 # Define a common function to get the required dataset. This function to be used by all R scripts
 getDataset <- function() {
 
-        # Define the URL to the dataset
+        # Define the hard values to be used in the code, includes - URL to the dataset, dataset filename and the dates to be filtered
         DatasetURL <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip"
         DatasetFilename <- "household_power_consumption.txt" 
         FilterDate1 = "1/2/2007"
