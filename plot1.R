@@ -6,7 +6,8 @@ library(dplyr)
 # Define a common function to get the required dataset. This function to be used by all R scripts
 getDataset <- function() {
 
-        # Define the hard values to be used in the code, includes - URL to the dataset, dataset filename and the dates to be filtered
+        # Define the hard values to be used in the code, 
+        # includes - URL to the dataset, dataset filename and the dates to be filtered
         DatasetURL <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip"
         DatasetFilename <- "household_power_consumption.txt" 
         FilterDate1 = "1/2/2007"
@@ -24,9 +25,10 @@ getDataset <- function() {
         # Define only the required subset of the dataset
         hpc2 <- subset(hpc, Date == FilterDate1 | Date == FilterDate2)
         
-        # Convert the Date and Time columns from character to Date and Time formats
-        hpc2 <- mutate(hpc2, Date = as.Date(Date))
-        hpc2 <- mutate(hpc2, Time = strptime(Time, "%H:%M:%S"))
+        # Convert the Time and Date columns from character to Date and Time formats.
+        # Note: Time needs to be convered into Date Time function
+        hpc2 <- mutate(hpc2, Time = strptime(paste(Date, Time, sep = " "), "%d/%m/%Y %H:%M:%S"))
+        hpc2 <- mutate(hpc2, Date = as.Date(Date, "%d/%m/%Y"))
         
         # Remove the unwanted variables that will no longer be required to free up memory
         rm(hpc)
