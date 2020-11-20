@@ -7,4 +7,11 @@ source("plot1.R")
 # Get the filtered dataset file by calling getDataset() method defined in Plot1.R file
 hpc_ds <- getDataset()
 
+# Draw Plot 2
 plot(hpc_ds$Time, as.numeric(hpc_ds$Global_active_power), type = "l", ylab = "Global Active Power (kilowatts)", xlab = "")
+
+# Copy the plot into png format with the specified width and height
+dev.copy(png, file = "plot2.png", width=480, height=480)
+
+# Set the device off
+dev.off()
