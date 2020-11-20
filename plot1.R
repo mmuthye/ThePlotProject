@@ -2,6 +2,8 @@
 
 # Import the required libraries, if any
 library(data.table)
+library(ggplot2)
+library(dplyr)
 
 # Define a common function to get the required dataset. This function to be used by all R scripts
 getDataset <- function() {
@@ -18,17 +20,32 @@ getDataset <- function() {
                 unzip(DatasetZip)
         } 
         
-
         # Load the Household Power Consumption (hpc) dataset
         hpc <- fread(file=DatasetFilename, header = TRUE, sep = "auto")
 
         # Define only the required subset of the dataset
         hpc2 <- subset(hpc, Date == FilterDate1 | Date == FilterDate2)
         
+        # Convert the Date and Time columns from character to Date and Time formats
+        hpc2 <- mutate(hpc2, Date = as.Date(Date))
+        hpc2 <- mutate(hpc2, Time = strptime(Time, "%H:%M:%S"))
+        
+        # Remove the unwanted variables that will no longer be required to free up memory
+        rm(hpc)
+
         # hpc2 now is the required dataset we need to use to plot the graphs. Return hpc2
         hpc2
 }
 
-dataset <- getDataset()
-dim(dataset)
+# Get the filtered dataset file
+hpc_ds <- getDataset()
 
+# Draw Plot 1
+hist(as.numeric(hpc_ds$Global_active_power), breaks=12, col = "red", xlab = "Global Active Power (kilowatts)",
+     main = "Global Active Power")
+
+# Copy the plot into png format with the specified width and height
+dev.copy(png, file = "plot1.png", width=480, height=480)
+
+# Set the device off
+dev.off()
