@@ -1,21 +1,50 @@
 #Plot 3
+# Of the four types of sources indicated by the type (point, nonpoint, onroad, nonroad) variable, 
+#       which of these four sources have seen decreases in emissions from 1999–2008 for Baltimore City? 
+#       Which have seen increases in emissions from 1999–2008? 
+#       Use the ggplot2 plotting system to make a plot answer this question.
 
-# Add a reference to Plot1 file since the function to download and create filtered dataset is part of plot1
-# This way repeating the code to download and creating the filtered dataset is avoided 
-source("plot1.R")
+# Import the required libraries, if any
+library(dplyr)
+library(ggplot2)
 
-# Get the filtered dataset file by calling getDataset() method defined in Plot1.R file
-hpc_ds <- getDataset()
+# Define the hard values to be used in the code, 
+# includes - URL to the dataset and dataset files
+DatasetURL <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip"
+DatasetZip <- "exdata_data_NEI_data.zip"
+DatasetFilename <- "summarySCC_PM25.rds" 
+SCCTableFilename <- "Source_Classification_Code.rds"
 
-# Draw Plot 3
+# Check if the dataset already exists / downloaded. If not, then download the file 
+if (!file.exists(DatasetFilename)) {
+        download.file(DatasetURL, DatasetZip)
+        unzip(DatasetZip)
+} 
 
-plot(hpc_ds$Time, hpc_ds$Sub_metering_1, type = "l", ylab = "Energy sub metering", xlab = "")
-points(hpc_ds$Time, hpc_ds$Sub_metering_2, type = "l", col = "red")
-points(hpc_ds$Time, hpc_ds$Sub_metering_3, type = "l", col = "blue")
-legend("topright", lty = c(1,1,1), lwd = c(2,2,2), col = c("black", "red", "blue"), legend = names(hpc_ds)[7:9])
+#Load the PM25 data
+## This first line will likely take a few seconds. Be patient!
+NEI <- readRDS(DatasetFilename)
+SCC <- readRDS(SCCTableFilename)
 
-# Copy the plot into png format with the specified width and height
-dev.copy(png, file = "plot3.png", width=480, height=480)
+#Get the subset of the data for Baltimore city
+dataset1 <- subset(NEI, fips == "24510")
+
+by_year_by_type <- aggregate(Emissions ~ year + type, dataset1, sum)
+
+#Set a png plot file
+png("plot3.png")
+
+#Draw plots for Emissions by year, denoted by different colors for each type and connect the points by line
+plot3 <- ggplot(by_year_by_type, aes(year, Emissions, color = type)) + geom_line()
+
+#Label and X and Y axis
+plot3 <- plot3 + xlab("year") + ylab(expression("Total PM"[2.5]*" Emissions")) 
+
+#Add title
+plot3 <- plot3 + ggtitle('Emissions trend in Baltimore City, Maryland from 1999 to 2008')
+
+#Print the plot to the appropriate device
+print(plot3)
 
 # Set the device off
 dev.off()

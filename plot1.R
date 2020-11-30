@@ -1,51 +1,47 @@
 #Plot1
+#Have total emissions from PM2.5 decreased in the United States from 1999 to 2008? 
+#Using the base plotting system, make a plot showing the total PM2.5 emission from all sources 
+#       for each of the years 1999, 2002, 2005, and 2008.
 
 # Import the required libraries, if any
 library(dplyr)
 
-# Define a common function to get the required dataset. This function to be used by all R scripts
-getDataset <- function() {
+# Define the hard values to be used in the code, 
+# includes - URL to the dataset and dataset files
+DatasetURL <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip"
+DatasetZip <- "exdata_data_NEI_data.zip"
+DatasetFilename <- "summarySCC_PM25.rds" 
+SCCTableFilename <- "Source_Classification_Code.rds"
 
-        # Define the hard values to be used in the code, 
-        # includes - URL to the dataset, dataset filename and the dates to be filtered
-        DatasetURL <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip"
-        DatasetFilename <- "household_power_consumption.txt" 
-        FilterDate1 = "1/2/2007"
-        FilterDate2 = "2/2/2007"
-        
-        # Check if the dataset already exists / downloaded. If not, then download the file 
-        if (!file.exists(DatasetFilename)) {
-                download.file(DatasetURL, DatasetZip)
-                unzip(DatasetZip)
-        } 
-        
-        # Load the Household Power Consumption (hpc) dataset
-        hpc <- fread(file=DatasetFilename, header = TRUE, sep = "auto")
+# Check if the dataset already exists / downloaded. If not, then download the file 
+if (!file.exists(DatasetFilename)) {
+        download.file(DatasetURL, DatasetZip)
+        unzip(DatasetZip)
+} 
 
-        # Define only the required subset of the dataset
-        hpc2 <- subset(hpc, Date == FilterDate1 | Date == FilterDate2)
-        
-        # Convert the Time and Date columns from character to Date and Time formats.
-        # Note: Time needs to be convered into Date Time function
-        hpc2 <- mutate(hpc2, Time = strptime(paste(Date, Time, sep = " "), "%d/%m/%Y %H:%M:%S"))
-        hpc2 <- mutate(hpc2, Date = as.Date(Date, "%d/%m/%Y"))
-        
-        # Remove the unwanted variables that will no longer be required to free up memory
-        rm(hpc)
+#Load the PM25 data
+## This first line will likely take a few seconds. Be patient!
+NEI <- readRDS(DatasetFilename)
+SCC <- readRDS(SCCTableFilename)
 
-        # hpc2 now is the required dataset we need to use to plot the graphs. Return hpc2
-        hpc2
-}
+#To find year-wise sum of Emission, aggregate NEI data by year and store year_wise_emissions data
+year_wise_emissions <- aggregate(Emissions ~ year, NEI, sum)
 
-# Get the filtered dataset file
-hpc_ds <- getDataset()
+#Draw a Scatterplot with total emission from all sources for each year 
+with(year_wise_emissions, plot(year, Emissions, col="blue", pch=19))
 
-# Draw Plot 1
-hist(as.numeric(hpc_ds$Global_active_power), breaks=12, col = "red", xlab = "Global Active Power (kilowatts)",
-     main = "Global Active Power")
+#Connect the year-wise dots with a line to indicate trend
+with(year_wise_emissions, lines(year, Emissions, col="magenta", xlab=range(year)))
+
+# Draw regression line to indicate trend as well - draw a shaded dotted line
+abline(lm(Emissions ~ year, year_wise_emissions), lty="dashed", lwd=1, col="grey")
+
+#Assign a title and define legend
+title(main = expression("Total PM"[2.5]*" Emissions Trend from 1999 to 2008"))
+legend("topright", col="blue", pch=19, "Total Emission for the year")
 
 # Copy the plot into png format with the specified width and height
-dev.copy(png, file = "plot1.png", width=480, height=480)
+dev.copy(png, file = "plot1.png")
 
 # Set the device off
 dev.off()
